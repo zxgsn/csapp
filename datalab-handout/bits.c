@@ -143,7 +143,8 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+
+  return ~(~(x&(~y))&~((~x)&y));
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -153,7 +154,7 @@ int bitXor(int x, int y) {
  */
 int tmin(void) {
 
-  return 2;
+  return (1<<31);
 
 }
 //2
@@ -165,7 +166,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return (!!(~(x+1)^x))^1&!!(x+1);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +177,11 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+	int a = 0xA;
+	int aa = a | (a<<4);
+	int aaaa = aa | (aa<<8);
+	int mask = aaaa | (aaaa<<16);
+  return !((x & mask) ^ mask);
 }
 /* 
  * negate - return -x 
@@ -186,7 +191,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x+1;
 }
 //3
 /* 
@@ -199,7 +204,11 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+	int i = x ^(x & 0x3F);
+	x = x & 0x3F;
+	//x = 0x111111 & x;
+  return !i & (!(((x>>4) ^ 0x3) | (((0xF & x)+ 0x6)>>4)));
+//十六进制和二进制的掩码
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +218,9 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+	x = !!x;
+	int mask = (x<<31)>>31; //算术位移看符号位
+  return (mask & y)|(~mask & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +230,13 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+	int signx = (x>>31) & 1;
+	int signy = (y>>31) & 1;
+
+
+  return !(x^y) || (!((!signx) & (signy)) && ((signx & (!signy)) || !((~x+y+1)>>31)));
+  //linux系统这样直接写和window不一样，故添加正负条件
+  //异或是对位运算
 }
 //4
 /* 
@@ -231,7 +248,11 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+	//int sig = x^0;
+	//line 239
+	int nex = ~x +1;
+	int sign = (nex | x)>>31;
+	return sign+1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
